@@ -1,0 +1,368 @@
+allgemeine LINUX sachen, befehle
+---------------------------------------------------------------------------
+grep -i -r -l 'string' /place/to.start/searching  show all files with text
+pkg-config --exists --print-errors packagename
+rpm -qa | grep packagename   check for installed packages
+yum list packagename		only lists the library, NOT THE HEADER FILES!!!!!
+--------------------------------
+
+############################
+vienna rna lib install
+############################
+make maintainer-clean
+git submodule init / update
+autoreconf --install
+./configure --without-forester --prefix='..'
+make
+
+
+Git lab sign in path = https://krios.tbi.univie.ac.at/users/sign_in
+	name = mario
+	pw = normales pw
+
+Create new Project:
+	go to website, create new Project, follow instructions, to the mkdirs in  your project directory
+	Create SSHkey, to project
+	add remote add origin
+	push -u origin master
+
+git status to show status
+
+adding/removing files files:
+	git add filename1
+	git add filename2	
+	git rm  filename1
+	git commit -m "your comment"
+	git commit -a -m "comment"   commit all tracked files
+	
+push -u origin master = to make this branch the origin branch
+
+
+get existing project from gitlab:
+	click explore on gitlab website, search your disired project and find the SSH address for this Project
+	get to your projects directory > git clone SSH address Project
+		
+Managing Branches
+
+	git branch    show all branches
+	git checkout -b "new Branch name"    create new Branch
+	git checkout "BranchName"		switch to different branches
+	
+	git push -u origin newBranchName	Push to new Branch
+
+
+
+History zurueck
+	git log  - logfiles sehen
+	git format-patch Hashkey of node 		saves the differences between the current commit and the next
+	patchfile shows the differences between the commits
+	git reset --hard hashkey of node   resets to the previuos commit,  --hard to delete/add files
+	patch -p1 < patchfile	undo saved changes, p1 if hirarchy is a?filename and b/filename,  else 2 or 3
+	
+delete push from server(remote branch)
+	git push origin :Branchname  push empty branch to server branch --> delete branch on the server
+	git push origin branchname lokal:branchname am server
+
+garbagecollector
+	git gc   removes all unnecessary files kept by the gitlab, for example reset commits
+
+-----------------------------------------------------------------------
+
+Arcplotter path = http://www.tbi.univie.ac.at/~ronny/arcplotter.html
+
+-----------------------------------------------------------------------
+
+SGE scripts:
+
+qstat -q \*  show all on this pc
+qstat -j command id   = show details of current job
+qdel -u username delete all jobs from user
+qsub script name   = send script to grid engine
+
+see sample sge script
+
+-----------------------------------------------------------------------
+Statistics and plotting
+
+use programm R for calculations
+use ggplot2 for plotting
+
+see sample ggplot2 script
+
+
+-----------------------------------------------------------------------
+ssh from home to work  (geht das ueberhaupt???)
+
+sshfs bioinf@tbi.univie.ac.at:/scratch/bioinf
+
+
+-----------------------------------------------------------------------
+
+Bioinformatic calculations
+
+structure conservation index :  http://www.tbi.univie.ac.at/RNA/RNAalifold.1.html  --sci parameter
+sequence similarity(mean pairwise identity) = ????
+
+
+-----------------------------------------------------------------------
+
+Autotools
+
+include <config.h>  to use PACKAGE_STRING, PACKAGE_VERSION, PACKAGE_NAME, VERSION,.. in your source code
+every directory must have a Makefile.am
+
+To make your distribution(tar file) use this commands:
+	autoreconf --install
+	./configure
+	make distcheck
+	gz tarball created
+
+to install the programm use this commands
+
+	extract tarball
+	cd directory
+	./configure --prefix=InstallationDirectory
+	make install
+	folders are created, program is compiled and can be used
+
+
+configure.ac file
+
+	AC_INIT(PackageName, VersionNumber, [mail address for help])  
+	AM_INIT_AUTOMAKE(-Wall -Werror foreign)    Werrer = all warnings as Errors, with foreign missing files are ok(such as Changelog, AUTHORS,..)
+	AC_PROG_CC	C compiler is searched and definded to CC variables
+	AC_PROG_CXX  	C++ compiler is searched,
+	AC_CONFIG_HEADERS([config.h])  config.h file is generated, #defines in configure.ac(created by MACROS like the AC_INIT) are gathered and put into config.h
+	PackageString can be used by the main.c because config.h gets PACKAGEString from automake
+	AC_CONFIG_FILES([			all makefiles created by configure have to be here
+	Makefile
+	src/Makefile
+	])
+	AC_SUBST(Variable, [Value])	set shell variables, can be used in the makefiles with $(VariableName)
+	AC_OUTPUT			finalizes everything and creates the files from Config_Files and Config_Headers	
+	
+	AM_PROG_AR 			for using archiver in your project
+	AC_PROG_LIBTOOL			add for using the libtool, libraries in the makefiles
+
+Linkage to other packages/Libraries is nessecary
+#Search for the RNAlib2 and set variables for Makefiles if found.  _CFLAGS and _LIBS can be overriden with the modue Name from PKG_CHECK_MODULES
+PKG_CHECK_MODULES([RNALIB], [RNAlib2],
+                  [ AC_SUBST([RNALIB_CFLAGS])
+                    AC_SUBST([RNALIB_LIBS])
+                  ],
+                  [])
+
+
+Makefile.am
+
+	SUBDIRS = src				iterate all subdirs before making this directory, more than one is possible
+	docu_DATA= INSTALL 			for other datas
+	docudir= $(pkgdatadir)
+	man_MANS = kinwalker.1 kinwalker.txt  	for manuals
+	LDADD = $(RNALIB_LIBS)  		set over AC_SUBST from configure.ac, defines to linkage path
+	(bin_PROGRAMMS =main.c , main_SOURCES =main.c , main_LDADD=libmoney.la)
+	AM_CPPFLAGS = $(RNALIB_CFLAGS)  libraryPath used with -I at the gcc command
+
+	bin_PROGRAMS = programName		*_PROGRAMS variables list programs that the Makefile should build, bin_Programs will make the programm in bindir
+	Primarys like *_DATA,*_LIBRARIES,*_SCRIPTS can be used, and automake recognize them
+	programName_SOURCES = main.c main.h	source files are linked to the programm name, if making a tarball with make dist. the source fil is inside the tarball
+	programName_SOURCES = main2.c  3 more sources are linked together ahd created as one programm described by bin_Programs
+	
+
+making Libraries
+	lib_LTLIBRARIES=libmoney.la   LTLIBRARIES = libtool libraries, isntall in lib directory
+	libmoney_la_SOURCES = money.c money.h
+
+	bin_PROGRAMS=main
+	main_SOURCES =money.c
+	main_LDADD=libmoney.la
+
+
+prefix	/usr/local
+  exec_prefix	${prefix}
+    bindir	${exec_prefix}/bin
+    libdir	${exec_prefix}/lib
+    …
+  includedir	${prefix}/include
+  datarootdir	${prefix}/share
+    datadir	${datarootdir}
+    mandir	${datarootdir}/man
+    infodir	${datarootdir}/info
+    docdir	${datarootdir}/doc/${PACKAGE}
+
+-----------------------------------------------------------------------
+
+checkmk unit tests with check package
+
+give error messages with these comparison, if they are not equal
+ck_assert_int_eq
+ck_assert_str_eq
+
+
+
+-----------------------------------------------------------------------
+Theoretical stuff( graph theory, structure prediction,..)
+-----------------------------------------------------------------------
+RNA structure is a graph and adjacenty matrix for graph to find nieghbours.
+	http://mathworld.wolfram.com/AdjacencyMatrix.html
+
+	backbone is inside the graph and in the adjacent matrix
+Struture prediction mittels backtraking 
+
+Um structure prediction mit energy zu loesen wird struktur in Loops zerlegt und diese einzeln bewertet
+eine loop ergibt sich aus den immediately interior bases and basepairs --> nearest neighbour model
+k-loops bezeichnet anzahl der immediate interior base-pairs , k loop of 1 = hairping loop, k of 2 = stack with size =0, else a bulge or interior loop, k > 2 = multiloop.
+size l = amount of immediate interor unpaired basepairs.
+Energy of stacking base-pairs(dangling ends) is much higher that the base-pair bonds --> nearest neighbour energy model
+
+nearest neighbour energy model iss not able to determine energy of multiloop, therefore linear model
+linear model regards the total number of unpaired nucleotids (size) and number of branches(degree)
+a = energy penalty for freedom restriction of closing base-pair of multi loop
+Energy of multiloop =  a + size * free energy of unpaired(b) + degree * free energy of branches(c)
+a,b and c not very well studied -> problem, weak prediction of multiloops with nearest neighbour model
+
+Zucker algorithm
+
+face of graph = flaeche.
+Energy kommt offensichtlich von den faces.
+z.B.: ein face with a single interior edge is a hairpin loop.
+energy of structure is sum of faces energy
+
+all supotimals form zucker
+
+einen energie bereich definieren, wo ein basenpaar (i,j) mit einer gewissen proability noch vorkommt.
+danach alle substrukturen machen die dieses basenpaar enthalten
+man bekommt substruktures rund um Energie bereich .
+Aenderung des Backtrackings notwendig
+grosse bereiche die gleiche susbstructures haben werden nicht gezeigt--> also doch nicht alle
+-----------------------------------------------------------------------
+
+probability mathematics
+
+Permutation of n elements without Wiederholung = Pn=n!
+
+
+
+
+
+
+-----------------------------------------------------------------------
+###################################################
+
+C-Python interfaces for viennaRNALib with SWIG-2.0, http://www.swig.org/papers/PyTutorial98/PyTutorial98.pdf
+
+To compile such SWIG wrappers to this(you must have c source files, and interface files(the wrappers for the c functions)
+swig -python example.i
+gcc -c -fpic example.c example_wrap.c -I/usr/local/include/python2.0
+gcc -shared example.o example_wrap.o -o _example.so
+
+for c++ use this line
+c++ -shared example.o example_wrap.o -o example.so
+
+now you have the wrappers in a shared library and you can create a python file and execate the c functions with example.cFunction()
+
+
+
+.i files = interfaces, are not language specific, and just define the wrappers 
+--------------------
+RNA.i
+------------------------------------------------------
+module RNA in RNA.i defines the name of the module
+includes for the header files and for the correspondnig itnerface files are in here
+define if there are any data structures that should not be included, f.ex. all starting with 'vrna_'
+
+--------------------
+tmaps.i
+------------------------------------------------------
+how to convert datatypes from C to target language
+target language ifs with #ifdef SWIGPYTHON or #ifdef SWIGPERL
+
+--------------------
+mfe.i ,  example to wrap c functions
+------------------------------------------------------
+create wrappers for all functions, and datatypes that are included via RNA.i to the RNA module
+for ex. c function fold
+float fold( const char *sequence, char *structure);
+
+we have as return values energy as float, and structure as char*, char* sequence is the inpur parameter
+
+now define a wrapper for this function
+
+%rename (fold) my_fold;			#in this wrapper the c function fold is now called my_fold
+
+%{
+  char *my_fold(char *string, char *constraints, float *energy) {   # this has to be c like header!!!,
+    char *struc;
+    struc = calloc(strlen(string)+1,sizeof(char));
+    if (constraints && fold_constrained)
+      strncpy(struc, constraints, strlen(string));
+    *energy = fold(string, struc);
+    if (constraints)
+      strncpy(constraints, struc, strlen(constraints));
+    return(struc);
+  }
+%}
+
+%newobject my_fold;			# now we have a object with memory space for the function my_fold
+char *my_fold(char *string, char *constraints = NULL, float *OUTPUT);	# define here what parameters should go inside or outside, and define default values ( here char* constraints)
+%ignore fold;	# now ignore the c function fold
+
+ --------------------
+params.i	, example to wrapp structs to class types
+------------------------------------------------------
+SWIG is default trying to create classes froms struct, therefore %nodefaultctor
+
+wrap the c struct 
+struct vrna_param_s {
+  int     id;
+  int     stack[NBPAIRS+1][NBPAIRS+1];
+  int     hairpin[31];
+  int     bulge[MAXLOOP+1];
+  int     internal_loop[MAXLOOP+1];
+	....
+	....
+
+to a class
+
+example:
+
+%rename (exp_param) vrna_exp_param_t;  	# we can now use RNA.exp_param in target language
+
+%nodefaultctor vrna_param_t;	#we want to define our own constructor
+				# for c structure vrna_param_t, define which attributes get the default setter/getter, here onlz the model_details get one, for every other attribute we have to define our own.
+typedef struct {		
+  vrna_md_t model_details;
+} vrna_param_t;
+
+				#same for the vrna_exp_param_t
+%nodefaultctor vrna_exp_param_t;
+typedef struct {			
+  double kT;
+  vrna_md_t model_details;
+} vrna_exp_param_t;
+
+				# to create constructors/destructors, and own class methods we have to extend the struct(name is c struct) 
+%extend vrna_param_t {
+  vrna_param_t(){		#this would be a own default constructor
+    vrna_param_t *P = vrna_params(NULL);  # set params to default NULL
+    return P;
+  }
+ ~vrna_param_t()... 		#is default destructor
+
+  vrna_param_t(vrna_md_t *md){  # another constructor with given modeldetails
+    vrna_param_t *P = vrna_params(md);
+    return P;
+  }
+
+  double  get_temperature(){  # a simple own setter function to gett the hidden c attribute temperature, $self is of course own object
+    return $self->temperature;
+  }
+}
+
+
+PROXY classes are used if for ex. a c++ class should be used in python just like the c++ class, is simple the same 
+http://www.swig.org/Doc1.3/SWIGPlus.html#SWIGPlus_nn38
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+
