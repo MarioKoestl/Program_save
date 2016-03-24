@@ -101,7 +101,7 @@ print "You have ", $eggs == 0 ? "no eggs" :
 ####loops
 
 foreach my $nuc (split//,$s)  # to loop over a string scalar, split with nothing
-
+f
 foreach my $string ( @array ) {
 	print $string;
 }
@@ -159,6 +159,15 @@ print $outputText;
 ###file handling###
 
 mode < = reading form file
+mode > = writing to file
+mode >> = appending to file
+
+#creating and open a file
+unless(open $fh_out,'>'.$f_out)
+{
+    die "Couldn't create'".$f_out."' because: ".$!;
+}
+
 my $f = "text.txt";
 open(my $fh, "<", $f) || die "Couldn't open '".$f."' for reading because: ".$!;
 
@@ -168,7 +177,7 @@ while(my $line = <$fh>){
 }
 
 Writing to file, no append!!!!!
-open(my $fh2, "<", $f) || die "Couldn't open '".$f."' for reading because: ".$!;
+open(my $fh2, ">", $f) || die "Couldn't open '".$f."' for reading because: ".$!;
 print $fh2 "iiffjfjfjfjfj";
 
 DOES filename exists
@@ -177,6 +186,16 @@ print "doens't exist -e "filename";
 -f  is a normal file
 more are found under "perl file test"
 
+######open directory
+opendir(my $dh, $dirPath) || die "Couldn't open '".$dirPath."' because: ".$!;
+
+while (my $file = readdir($dh)) {
+    if ($file =~ m/gene_pos*/)
+    {
+        print $file ."\n";
+    }
+}
+next unless (-f "$dir/$file");  # only get files,  -d for directorys
 
 ###regex####
 \w+  anynumbers+anycharacter for building words, infinit amount of them
@@ -201,8 +220,17 @@ getting more than one found pattern, with \g for group,. Prints all Words of the
 my @matches =$myString =~ m/(\w+)/g; 
 print join ", ", map {"'".$_."'"} @matches;
 
+$-[0] stores the -1 location of the string for the found pattern
+
+# print the position of all found matches
+while ($sequence =~ /$cutSeq/g) {
+        print $-[0];
+ }
+
 global substitution
-$string =~ s/[aeiou]/'-'/g/i;  #  substitute every character of aeiou with -, /i for case incensitive
+$string =~ s/[aeiou]/'-'/gi;  #  substitute every character of aeiou with -, /i for case incensitive
+
+$sentence =~ tr/abc/edf/  // replace each a with a e, each b with a d .....
 
 /x allows the regex to contain whitespace, returns and comments( so you can comment your regex now
 
@@ -216,7 +244,8 @@ $string =~ s/[aeiou]/'-'/g/i;  #  substitute every character of aeiou with -, /i
 
 length  # length of scalar
 reverse
-pop 		extracts and return the last element of array
+pop 		extracts and return the last element of 
+
 push 		append extra elements to array
 shift 		extracts and return the frst alement of array
 unshift 	insert new element s at beginning of array
