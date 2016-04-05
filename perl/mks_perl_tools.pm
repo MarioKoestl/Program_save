@@ -77,6 +77,7 @@ sub getFilesFromDir
      my $isFullPath=shift(@_);
      my $regex = shift(@_);
      
+     
      my @files = getAllFilesFromDir($dirPath);
           
      @files = grep {(-f $_)} @files; # only take real files not dirs
@@ -90,7 +91,6 @@ sub getFilesFromDir
      return @files;
      
 }
-
 sub getAllFilesFromDir
 {
     my @retArray=();
@@ -170,7 +170,7 @@ sub readMatrixToHash
         
     if(!$sep)
     {
-        $sep="\t";  # setting the default seperator
+        $sep='\t';  # setting the default seperator
     }
     if (!$keyColumn) {
         $keyColumn=0;
@@ -178,6 +178,10 @@ sub readMatrixToHash
     if (!$valueColumn) {
         $valueColumn=1;
     }
+    if (!$hasHeader) {
+        $hasHeader=0;
+    }
+    
     
     
     my %hash;
