@@ -1,0 +1,814 @@
+start with interfaces.
+
+
+interfaces for struct vrna_fold_compound(vrna_fc_s) [from data_structures.h] is wrapped in fold_compund.i
+
+finding all functions with vrna_fold_compound_t in it
+
+
+
+
+
+
+
+################
+in data_structures.h
+##################
+
+# adding auxiliary data to existing vrna_fold_compounds,  cannot be done just zet, because function pointer to cleanup function
+void vrna_fold_compound_add_auxdata(vrna_fold_compound_t *vc,
+                                    void *data,
+                                    vrna_callback_free_auxdata *f);
+
+#adding recursive status function, also function pointer
+void vrna_fold_compound_add_callback( vrna_fold_compound_t *vc,
+                                      vrna_callback_recursion_status *f);
+####################
+in mfe.h, DONE
+###########################
+
+#MFE prediciton with windows and zscore cutoff
+!!! USE_SVM has to be set, is not so there is no function available
+float vrna_mfe_window_zscore(vrna_fold_compound_t *vc, double min_z, FILE *file);
+
+#what is this??
+void
+vrna_backtrack_from_intervals(vrna_fold_compound_t *vc,
+                              vrna_bp_stack_t *bp_stack,
+                              sect bt_stack[],
+                              int s);
+
+#####
+in eval.h
+####
+
+
+
+
+
+####
+in centroid.h
+######
+ *  @brief Get the centroid structure of the ensemble
+ * 
+ *  The centroid is the structure with the minimal average distance to all other structures
+ *  \n @f$ <d(S)> = \sum_{(i,j) \in S} (1-p_{ij}) + \sum_{(i,j) \notin S} p_{ij} @f$ \n
+ *  Thus, the centroid is simply the structure containing all pairs with @f$p_ij>0.5@f$
+ *  The distance of the centroid to the ensemble is written to the memory adressed by @a dist.
+ * 
+ *  @ingroup              centroid_fold
+ *  @param[in]    vc      The fold compound data structure
+ *  @param[out]   dist    A pointer to the distance variable where the centroid distance will be written to
+ *  @return               The centroid structure of the ensemble in dot-bracket notation
+ */
+!!!SEGMENTATION FAULT
+ char *vrna_centroid(vrna_fold_compound_t *vc, double *dist);
+
+
+
+
+
+##############
+in constraints.h, constraints_hard.h
+##########
+
+void vrna_hc_add_f( vrna_fold_compound_t *vc,
+                    vrna_callback_hc_evaluate *f);
+
+
+/**
+ *  @brief Apply a list of hard constraints for single nucleotides
+ *
+ *  @ingroup  hard_constraints
+ *
+ *  @param  vc          The #vrna_fold_compound_t the hard constraints are associated with
+ *  @param  constraints The list off constraints to apply, last entry must have position
+ *                      attribute set to 0
+ */
+int
+!!!parameter is a struct, could be difficult
+vrna_hc_add_up_batch( vrna_fold_compound_t *vc,
+                      vrna_hc_up_t *constraints);
+
+/**
+ *  @brief Add an auxiliary data structure for the generic hard constraints callback function
+ *
+ *  @ingroup generic_hc
+ *
+ *  @see vrna_hc_add_f()
+ *
+ *  @param  vc        The fold compound the generic hard constraint function should be bound to
+ *  @param  data      A pointer to the data structure that holds required data for function 'f'
+ *  @param  free_data A pointer to a function that free's the memory occupied by @data (Maybe NULL)
+ */
+void vrna_hc_add_data(vrna_fold_compound_t *vc,
+                      void *data,
+                      vrna_callback_free_auxdata *f);
+
+ /*not abel to use double vector multidimensional, not recognized
+ void sc_add_bp(std::vector<std::vector<int>> constraints,unsigned int options=VRNA_OPTION_MFE)
+ {
+	  std::cout <<"geht";
+ }*/
+
+
+
+
+
+###############
+ligand.h
+#############
+
+
+#laut ronny soll ich noch warten dass zu implementieren
+int
+vrna_sc_detect_hi_motif(vrna_fold_compound_t *vc,
+                        const char *structure,
+                        int *i,
+                        int *j,
+                        int *k,
+                        int *l);
+
+
+int
+vrna_sc_get_hi_motif( vrna_fold_compound_t *vc,
+                      int *i,
+                      int *j,
+                      int *k,
+                      int *l);
+
+
+#############
+aln_util.h
+#########
+  \brief Retrieve an array of #vrna_pinfo_t structures from precomputed pair probabilities
+ *
+ *  This array of structures contains information about positionwise pair probabilies,
+ *  base pair entropy and more
+ *
+ *  \see #vrna_pinfo_t, and vrna_pf()
+ *
+ *  \param  vc          The #vrna_fold_compound_t of type #VRNA_VC_TYPE_ALIGNMENT with precomputed partition function matrices
+ *  \param  structure   An optional structure in dot-bracket notation (Maybe NULL)
+ *  \param  threshold   Do not include results with pair probabilities below threshold
+ *  \return             The #vrna_pinfo_t array
+ */
+vrna_pinfo_t *vrna_aln_pinfo(vrna_fold_compound_t *vc,
+                                  const char *structure,
+                                  double threshold);
+
+
+
+
+#####
+part_func.h
+##########
+
+
+
+
+ @brief  Compute stacking probabilities
+ *
+ *  For each possible base pair @f$(i,j)@f$, compute the probability of a stack
+ *  @f$(i,j)@f$, @f$(i+1, j-1)@f$.
+ *
+ *  @ingroup pf_fold
+ *
+ *  @param  vc      The fold compound data structure with precomputed base pair probabilities
+ *  @param  cutoff  A cutoff value that limits the output to stacks with @f$ p > \textrm{cutoff} @f$.
+ *  @return         A list of stacks with enclosing base pair @f$(i,j)@f$ and probabiltiy @f$ p @f$
+ */
+vrna_plist_t *vrna_stack_prob(vrna_fold_compound_t *vc, double cutoff);
+
+
+
+############
+2Dpfold
+############
+
+ * @brief Compute the partition function for all distance classes
+ *
+ * This function computes the partition functions for all distance classes
+ * according the two reference structures specified in the datastructure 'vars'.
+ * Similar to vrna_mfe_TwoD() the arguments maxDistance1 and maxDistance2 specify
+ * the maximum distance to both reference structures. A value of '-1' in either of
+ * them makes the appropriate distance restrictionless, i.e. all basepair distancies
+ * to the reference are taken into account during computation.
+ * In case there is a restriction, the returned solution contains an entry where
+ * the attribute k=l=-1 contains the partition function for all structures exceeding
+ * the restriction.
+ * A value of #INF in the attribute 'k' of the returned list denotes the end of the list
+ *
+ * @see vrna_fold_compound_TwoD(), vrna_fold_compound_free(), #vrna_fold_compound
+ *      #vrna_sol_TwoD_pf_t
+ *
+ * @param vc            The datastructure containing all necessary folding attributes and matrices
+ * @param maxDistance1  The maximum basepair distance to reference1 (may be -1)
+ * @param maxDistance2  The maximum basepair distance to reference2 (may be -1)
+ * @returns             A list of partition funtions for the corresponding distance classes
+ */
+vrna_sol_TwoD_pf_t  *
+vrna_pf_TwoD(vrna_fold_compound_t *vc,
+                  int maxDistance1,
+                  int maxDistance2);
+
+ *
+ *  If the argument 'd1' is set to '-1', the structure will be backtracked in the distance class
+ *  where all structures exceeding the maximum basepair distance to either of the references reside.
+ *
+ *  @pre      The argument 'vars' must contain precalculated partition function matrices,
+ *            i.e. a call to vrna_pf_TwoD() preceding this function is mandatory!
+ *
+ *  @see      vrna_pf_TwoD()
+ *
+ *  @param[in]  vars  the datastructure containing all necessary folding attributes and matrices
+ *  @param[in]  d1    the distance to reference1 (may be -1)
+ *  @param[in]  d2    the distance to reference2
+ *  @returns    A sampled secondary structure in dot-bracket notation
+ */
+char *
+vrna_pbacktrack_TwoD( vrna_fold_compound_t *vc,
+                      int d1,
+                      int d2);
+
+ @brief Sample secondary structure representatives with a specified length from a set of distance classes according to their 
+ *  Boltzmann probability
+ *
+ * This function does essentially the same as vrna_pbacktrack_TwoD() with the only difference that partial structures,
+ * i.e. structures beginning from the 5' end with a specified length of the sequence, are backtracked
+ *
+ * @note      This function does not work (since it makes no sense) for circular RNA sequences!
+ * @pre       The argument 'vars' must contain precalculated partition function matrices,
+ *            i.e. a call to vrna_pf_TwoD() preceding this function is mandatory!
+ *
+ * @see       vrna_pbacktrack_TwoD(), vrna_pf_TwoD()
+ *
+ *  @param[in]  vars    the datastructure containing all necessary folding attributes and matrices
+ *  @param[in]  d1      the distance to reference1 (may be -1)
+ *  @param[in]  d2      the distance to reference2
+ *  @param[in]  length  the length of the structure beginning from the 5' end
+ *  @returns    A sampled secondary structure in dot-bracket notation
+ */
+char *
+vrna_pbacktrack5_TwoD(vrna_fold_compound_t *vc,
+                      int d1,
+                      int d2,
+                      unsigned int length);
+
+
+
+
+##############
+gquad.h
+##############
+
+void        vrna_gquad_mx_local_update( vrna_fold_compound_t *vc,
+                                        int start);
+
+PRIVATE INLINE int
+vrna_BT_gquad_mfe(vrna_fold_compound_t *vc,
+                  int i,
+                  int j,
+                  vrna_bp_stack_t *bp_stack,
+                  int *stack_count);
+
+PRIVATE INLINE int
+vrna_BT_gquad_int(vrna_fold_compound_t *vc,
+                  int i,
+                  int j,
+                  int en,
+                  vrna_bp_stack_t *bp_stack,
+                  int *stack_count);
+
+
+
+##########
+subopt.h
+##########
+@brief Returns list of subopt structures or writes to fp
+ * 
+ *  This function produces <b>all</b> suboptimal secondary structures within
+ *  'delta' * 0.01 kcal/mol of the optimum, see @cite wuchty:1999. The results
+ *  are either directly written to a 'fp' (if 'fp' is not NULL), or
+ *  (fp==NULL) returned in a #vrna_subopt_solution_t * list terminated
+ *  by an entry were the 'structure' member is NULL.
+ *
+ *  @ingroup subopt_wuchty
+ *
+ *  @see vrna_subopt_zuker()
+ *  @param  vc
+ *  @param  delta
+ *  @param  sorted  Sort results by energy in ascending order
+ *  @param  fp
+ *  @return
+ */
+vrna_subopt_solution_t *
+vrna_subopt(vrna_fold_compound_t *vc,
+            int delta,
+            int sorted,
+            FILE *fp);
+
+brief Compute Zuker type suboptimal structures
+ *
+ *  Compute Suboptimal structures according to M. Zuker @cite zuker:1989 , i.e. for every
+ *  possible base pair the minimum energy structure containing the resp. base pair.
+ *  Returns a list of these structures and their energies.
+ *
+ *  @note This function internally uses the cofold implementation to compute
+ *        the suboptimal structures. For that purpose, the function doubles
+ *        the sequence and enlarges the DP matrices, which in fact will grow
+ *        by a factor of 4 during the computation!
+ *        At the end of the structure prediction, everything will be re-set
+ *        to its original requriements, i.e. normal sequence, normal (empty)
+ *        DP matrices.
+ *
+ *  @bug  Due to resizing, any pre-existing constraints will be lost!
+ *
+ *  @ingroup subopt_zuker
+ *
+ *  @see vrna_subopt(), zukersubopt(), zukersubopt_par()
+ *
+ *  @param  vc  fold compound
+ *  @return     List of zuker suboptimal structures
+ */
+vrna_subopt_solution_t *
+vrna_subopt_zuker(vrna_fold_compound_t *vc);
+
+
+##########
+hairpin_loops.h
+#################
+
+
+/**
+ *  @brief Backtrack a hairpin loop closed by @f$ (i,j) @f$
+ *
+ *  @note This function is polymorphic! The provided #vrna_fold_compound_t may be of type
+ *  #VRNA_VC_TYPE_SINGLE or #VRNA_VC_TYPE_ALIGNMENT
+ *
+ */
+
+!!!struct conversion not yet tried
+int
+vrna_BT_hp_loop(vrna_fold_compound_t *vc,
+                int i,
+                int j,
+                int en,
+                vrna_bp_stack_t *bp_stack,
+                int   *stack_count);
+
+
+
+
+
+/**
+ *  @brief  Evaluate the free energy of an exterior hairpin loop
+ *          and consider possible hard constraints
+ *
+ *  @note This function is polymorphic! The provided #vrna_fold_compound_t may be of type
+ *  #VRNA_VC_TYPE_SINGLE or #VRNA_VC_TYPE_ALIGNMENT
+ *
+ */
+!!!test not working
+int
+vrna_E_ext_hp_loop( vrna_fold_compound_t *vc,
+                    int i,
+                    int j);
+ *  @brief Evaluate free energy of an exterior hairpin loop
+ *
+ *  @ingroup eval
+ *
+ */
+
+
+
+ *  @brief High-Level function for hairpin loop energy evaluation (partition function variant)
+ *
+ *  @see vrna_E_hp_loop() for it's free energy counterpart
+ *
+ *  @note This function is polymorphic! The provided #vrna_fold_compound_t may be of type
+ *  #VRNA_VC_TYPE_SINGLE or #VRNA_VC_TYPE_ALIGNMENT
+ *
+*/
+
+!!!TEST not working
+FLT_OR_DBL
+vrna_exp_E_hp_loop( vrna_fold_compound_t *vc,
+                    int i,
+                    int j);
+
+
+/**
+ *  @brief Backtrack a hairpin loop closed by @f$ (i,j) @f$
+ *
+ *  @note This function is polymorphic! The provided #vrna_fold_compound_t may be of type
+ *  #VRNA_VC_TYPE_SINGLE or #VRNA_VC_TYPE_ALIGNMENT
+ *
+ */
+
+!!!STACKS not tried
+int
+vrna_BT_hp_loop(vrna_fold_compound_t *vc,
+                int i,
+                int j,
+                int en,
+                vrna_bp_stack_t *bp_stack,
+                int   *stack_count);
+
+
+#######
+interior_loops.h
+##########
+/**
+ *  @brief Evaluate energy of a base pair stack closed by (i,j)
+ */
+int E_stack(int i, int j, vrna_fold_compound_t *vc);
+
+
+###########
+findpath.h
+#############
+
+
+/**
+ *  \brief Find energy of a saddle point between 2 structures
+ *  (search only direct path)
+ *
+ *  This function uses an inplementation of the @em findpath algorithm @cite flamm:2001
+ *  for near-optimal direct refolding path prediction.
+ *
+ *  Model details, and energy parameters are used as provided via the parameter 'vc'.
+ *  The #vrna_fold_compound_t does not require memory for any DP matrices,
+ *  but requires all most basic init values as one would get from a call like this:
+ *  @code{.c}
+ vc = vrna_fold_compound(sequence, NULL, VRNA_OPTION_MFE | VRNA_OPTION_EVAL_ONLY);
+    @endcode
+ *
+ *  @see vrna_fold_compound(), #vrna_fold_compound_t, vrna_path_findpath()
+ *
+ *  @param vc     The #vrna_fold_compound_t with precomputed sequence encoding and model details
+ *  @param struc1 The start structure in dot-brakcet notation
+ *  @param struc2 The target structure in dot-bracket notation
+ *  @param max    A number specifying how many strutures are being kept at each step during the search
+ *  @returns      The saddle energy in 10cal/mol
+ */
+int vrna_path_findpath_saddle(vrna_fold_compound_t *vc,
+                              const char *struc1,
+                              const char *struc2,
+                              int max);
+
+
+ @brief Find refolding path between 2 structures
+ *  (search only direct path)
+ *
+ *  This function uses an inplementation of the @em findpath algorithm @cite flamm:2001
+ *  for near-optimal direct refolding path prediction.
+ *
+ *  Model details, and energy parameters are used as provided via the parameter 'vc'.
+ *  The #vrna_fold_compound_t does not require memory for any DP matrices,
+ *  but requires all most basic init values as one would get from a call like this:
+ *  @code{.c}
+ vc = vrna_fold_compound(sequence, NULL, VRNA_OPTION_MFE | VRNA_OPTION_EVAL_ONLY);
+    @endcode
+ *
+ *  @see vrna_fold_compound(), #vrna_fold_compound_t, vrna_path_findpath_saddle()
+ *
+ *  @param vc     The #vrna_fold_compound_t with precomputed sequence encoding and model details
+ *  @param struc1 The start structure in dot-brakcet notation
+ *  @param struc2 The target structure in dot-bracket notation
+ *  @param max    A number specifying how many strutures are being kept at each step during the search
+ *  @returns      The saddle energy in 10cal/mol
+ */
+vrna_path_t *vrna_path_findpath(vrna_fold_compound_t *vc,
+                                const char *s1,
+                                const char* s2,
+                                int maxkeep);
+
+
+#########
+2Dfold.h
+#########
+ *
+ * This function computes the minimum free energies and a representative
+ * secondary structure for each distance class according to the two references
+ * specified in the datastructure 'vars'.
+ * The maximum basepair distance to each of both references may be set
+ * by the arguments 'distance1' and 'distance2', respectively.
+ * If both distance arguments are set to '-1', no restriction is assumed and
+ * the calculation is performed for each distance class possible.
+ *
+ * The returned list contains an entry for each distance class. If a maximum
+ * basepair distance to either of the references was passed, an entry with
+ * k=l=-1 will be appended in the list, denoting the class where all structures
+ * exceeding the maximum will be thrown into.
+ * The end of the list is denoted by an attribute value of #INF in
+ * the k-attribute of the list entry.
+ *
+ *  @see  vrna_fold_compound_TwoD(), vrna_fold_compound_free(), vrna_pf_TwoD()
+ *        vrna_backtrack5_TwoD(), #vrna_sol_TwoD_t, #vrna_fold_compound_t
+ *
+ *  @param vc         The datastructure containing all precomputed folding attributes
+ *  @param distance1  maximum distance to reference1 (-1 means no restriction)
+ *  @param distance2  maximum distance to reference2 (-1 means no restriction)
+ *  @return           A list of minimum free energies (and corresponding structures)
+ *                    for each distance class
+ */
+vrna_sol_TwoD_t *
+vrna_mfe_TwoD(vrna_fold_compound_t *vc,
+              int distance1,
+              int distance2);
+
+ * @brief Backtrack a minimum free energy structure from a 5' section of specified length
+ *
+ * This function allows to backtrack a secondary structure beginning at the 5' end, a specified
+ * length and residing in a specific distance class.
+ * If the argument 'k' gets a value of -1, the structure that is backtracked is assumed to
+ * reside in the distance class where all structures exceeding the maximum basepair distance
+ * specified in vrna_mfe_TwoD() belong to.
+ * @note The argument 'vars' must contain precalculated energy values in the energy matrices,
+ * i.e. a call to vrna_mfe_TwoD() preceding this function is mandatory!
+ *
+ * @see vrna_mfe_TwoD()
+ *
+ * @param vc    The datastructure containing all precomputed folding attributes
+ * @param j     The length in nucleotides beginning from the 5' end
+ * @param k     distance to reference1 (may be -1)
+ * @param l     distance to reference2
+ */
+char *
+vrna_backtrack5_TwoD( vrna_fold_compound_t *vc,
+                      int k,
+                      int l,
+                      unsigned int j);
+
+
+
+###########
+params.h
+#########
+ *  @brief  Update/Reset energy parameters data structure within a #vrna_fold_compound_t
+ *
+ *  Passing NULL as second argument leads to a reset of the energy parameters within
+ *  vc to their default values. Otherwise, the energy parameters provided will be copied
+ *  over into vc.
+ *
+ *  @see vrna_params_reset(), #vrna_param_t, #vrna_md_t, vrna_params()
+ *
+ *  @param  vc    The #vrna_fold_compound_t that is about to receive updated energy parameters
+ *  @param  par   The energy parameters used to substitute those within vc (Maybe NULL)
+ */
+void
+vrna_params_subst( vrna_fold_compound_t *vc,
+                    vrna_param_t *par);
+
+/**
+ *  @brief Update the energy parameters for subsequent partition function computations
+ *
+ *  This function can be used to properly assign new energy parameters for partition
+ *  function computations to a #vrna_fold_compound_t. For this purpose, the data of the
+ *  provided pointer `params`  will be copied into `vc` and a recomputation of the partition
+ *  function scaling factor is issued, if the `pf_scale` attribute of `params` is less than `1.0`.
+ *
+ *  Passing NULL as second argument leads to a reset of the energy parameters within
+ *  vc to their default values
+ *
+ *  @see vrna_exp_params_reset(), vrna_exp_params_rescale(), #vrna_exp_param_t, #vrna_md_t,
+ *  vrna_exp_params()
+ *
+ *  @param  vc      The fold compound data structure
+ *  @param  params  A pointer to the new energy parameters
+ */
+void
+vrna_exp_params_subst(vrna_fold_compound_t *vc,
+                      vrna_exp_param_t *params);
+
+ *  @brief Rescale Boltzmann factors for partition function computations
+ *
+ *  This function may be used to (automatically) rescale the Boltzmann factors used
+ *  in partition function computations. Since partition functions over subsequences
+ *  can easily become extremely large, the RNAlib internally rescales them to avoid
+ *  numerical over- and/or underflow. Therefore, a proper scaling factor @f$s@f$ needs to
+ *  be chosen that in turn is then used to normalize the corresponding
+ *  partition functions @f$\hat{q}[i,j] = q[i,j] / s^{(j-i+1)}@f$.
+ *
+ *  This function provides two ways to automatically adjust the scaling
+ *  factor.
+ *  1. Automatic guess
+ *  2. Automatic adjustment according to MFE
+ *
+ *  Passing `NULL` as second parameter activates the _automatic guess mode_. Here,
+ *  the scaling factor is recomputed according to a mean free energy of `184.3*length` cal
+ *  for random sequences.
+ *  @note This recomputation only takes place if the `pf_scale` attribute of the
+ *  `exp_params` datastructure contained in `vc` has a value below `1.0`.
+ *
+ *  On the other hand, if the MFE for a sequence is known, it can be used to recompute
+ *  a more robust scaling factor, since it represents the lowest free energy of the entire
+ *  ensemble of structures, i.e. the highest Boltzmann factor. To activate this second
+ *  mode of _automatic adjustment according to MFE_, a pointer to the MFE value needs to
+ *  be passed as second argument. This value is then taken to compute the scaling factor
+ *  as @f$ s = exp((sfact * MFE) / kT / length )@f$, where sfact is an additional
+ *  scaling weight located in the vrna_md_t datastructure of `exp_params` in `vc`.
+ *
+ *  The computed scaling factor @f$s@f$ will be stored as `pf_scale` attribute of the
+ *  `exp_params` datastructure in `vc`.
+ *
+ *  @see vrna_exp_params_subst(), vrna_md_t, vrna_exp_param_t, #vrna_fold_compound_t
+ *
+ *  @param  vc  The fold compound data structure
+ *  @param  mfe A pointer to the MFE (in kcal/mol) or NULL
+ */
+void
+vrna_exp_params_rescale(vrna_fold_compound_t *vc,
+                        double *mfe);
+
+
+/**
+ *  @brief  Reset free energy parameters within a #vrna_fold_compound_t
+ *          according to provided, or default model details
+ *
+ *  This function allow to rescale free energy parameters for subsequent structure
+ *  prediction or evaluation according to a set of model details, e.g. temperature
+ *  values. To do so, the caller provides either a pointer to a set of model details
+ *  to be used for rescaling, or NULL if global default setting should be used.
+ *
+ *  @see vrna_exp_params_reset(), vrna_params_subs()
+ *  @param  vc    The fold compound data structure
+ *  @param  md_p  A pointer to the new model details (or NULL for reset to defaults)
+ */
+void vrna_params_reset( vrna_fold_compound_t *vc,
+                        vrna_md_t *md_p);
+
+
+**
+ *  @brief  Reset Boltzmann factors for partition function computations
+ *          within a #vrna_fold_compound_t according to provided, or
+ *          default model details
+ *
+ *  This function allow to rescale Boltzmann factors for subsequent prartition
+ *  function computations according to a set of model details, e.g. temperature
+ *  values. To do so, the caller provides either a pointer to a set of model details
+ *  to be used for rescaling, or NULL if global default setting should be used.
+ *
+ *  @see vrna_params_reset(), vrna_exp_params_subst(), vrna_exp_params_rescale()
+ *  @param  vc    The fold compound data structure
+ *  @param  md_p  A pointer to the new model details (or NULL for reset to defaults)
+ */
+void vrna_exp_params_reset( vrna_fold_compound_t *vc,
+                            vrna_md_t *md_p);
+
+
+
+############3
+boltzmann_sampling.h
+###########
+*  @brief Sample a secondary structure of a subsequence from the Boltzmann ensemble according its probability
+ *
+ *  @ingroup subopt_stochbt
+ *  @pre    The fold compound has to be obtained using the #VRNA_OPTION_HYBRID option in vrna_fold_compound()
+ *  @pre    vrna_pf() has to be called first to fill the partition function matrices
+ *
+ *  @param  vc      The fold compound data structure
+ *  @param  length  The length of the subsequence to consider (starting with 5' end)
+ *  @return         A sampled secondary structure in dot-bracket notation
+ */
+char    *vrna_pbacktrack5(vrna_fold_compound_t *vc, int length);
+
+
+*  @brief Sample a secondary structure (consensus structure) from the Boltzmann ensemble according its probability
+ *
+ *  @ingroup subopt_stochbt
+ *  @pre    The dynamic programming (DP) matrices have to allow for unique multibranch loop decomposition, i.e.
+ *          the vrna_md_t.uniq_ML flag has to be non-zero before calling vrna_fold_compound()
+ *  @pre    vrna_pf() has to be called first to fill the partition function matrices
+ *
+ *  @note This function is polymorphic. It accepts #vrna_fold_compound_t of type
+ *        #VRNA_VC_TYPE_SINGLE, and #VRNA_VC_TYPE_ALIGNMENT.
+ *
+ *  @note The function will automagically detect cicular RNAs based on the model_details in exp_params as
+ *        provided via the #vrna_fold_compound_t
+ *
+ *  @param  vc      The fold compound data structure
+ *  @param  length  The length of the subsequence to consider (starting with 5' end)
+ *  @return         A sampled secondary structure in dot-bracket notation
+ */
+char    *vrna_pbacktrack(vrna_fold_compound_t *vc);
+
+
+
+
+###########
+multibranch_loops.h
+##################
+
+/**
+ *  @brief Evaluate energy of a multi branch helices stacking onto closing pair (i,j)
+ *
+ *  Computes total free energy for coaxial stacking of (i.j) with (i+1.k) or (k+1.j-1)
+ */
+int E_mb_loop_stack(int i, int j, vrna_fold_compound_t *vc);
+
+
+/**
+ *  @brief Evaluate energy of a multi branch helices stacking onto closing pair (i,j)
+ *
+ *  Computes total free energy for coaxial stacking of (i.j) with (i+1.k) or (k+1.j-1)
+ */
+int E_mb_loop_stack(int i, int j, vrna_fold_compound_t *vc);
+
+/**
+ *  @brief  Backtrack the decomposition of a multi branch loop closed by @f$ (i,j) @f$
+ *
+ *  @param    vc          The #vrna_fold_compound_t filled with all relevant data for backtracking
+ *  @param    i           5' position of base pair closing the loop (will be set to 5' position
+ *                        of leftmost decomposed block upon successful backtracking)
+ *  @param    j           3' position of base pair closing the loop (will be set to 3' position
+ *                        of rightmost decomposed block upon successful backtracking)
+ *  @param    k           Split position that delimits leftmost from rightmost block, [i,k] and
+ *                        [k+1, j], respectively. (Will be set upon successful backtracking)
+ *  @param    en          The energy contribution of the substructure enclosed by @f$ (i,j) @f$
+ *  @param    component1  Type of leftmost block (1 = ML, 2 = C)
+ *  @param    component2  Type of rightmost block (1 = ML, 2 = C)
+ *  @returns              1, if backtracking succeeded, 0 otherwise.
+ */
+int
+vrna_BT_mb_loop(vrna_fold_compound_t *vc,
+                int *i,
+                int *j,
+                int *k,
+                int en,
+                int *component1,
+                int *component2);
+
+int
+E_mb_loop_fast( int i,
+                int j,
+                vrna_fold_compound_t *vc,
+                int *dmli1,
+                int *dmli2);
+
+int
+E_mb_loop_stack(int i,
+                int j,
+                vrna_fold_compound_t *vc);
+
+int
+E_ml_rightmost_stem(int i,
+                    int j,
+                    vrna_fold_compound_t *vc);
+
+
+int
+E_ml_stems_fast(int i,
+                int j,
+                vrna_fold_compound_t *vc,
+                int *fmi,
+                int *dmli);
+
+FLT_OR_DBL
+vrna_exp_E_mb_loop_fast( vrna_fold_compound_t *vc,
+                    int i,
+                    int j,
+                    FLT_OR_DBL *qqm1);
+
+/*
+
+# Backtracking functions below  #
+
+*/
+
+int
+vrna_BT_mb_loop_fake( vrna_fold_compound_t *vc,
+                      int *u,
+                      int *i,
+                      int *j,
+                      vrna_bp_stack_t *bp_stack,
+                      int *stack_count);
+
+int
+vrna_BT_mb_loop_split(vrna_fold_compound_t *vc,
+                      int *i,
+                      int *j,
+                      int *k,
+                      int *l,
+                      int *component1,
+                      int *component2,
+                      vrna_bp_stack_t *bp_stack,
+                      int *stack_count);
+
+int
+vrna_BT_mb_loop(vrna_fold_compound_t *vc,
+                int *i,
+                int *j,
+                int *k,
+                int en,
+                int *component1,
+                int *component2);
+
+#########
+in part_func_co.h
+########
+vrna_dimer_pf_t
+vrna_pf_dimer(vrna_fold_compound_t *vc,
+              char *structure);
+
