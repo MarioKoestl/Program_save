@@ -4,6 +4,37 @@ use warnings;
 use strict;
 use File::Basename;
 #useful modules for working with perl
+use Class::Struct;
+
+#struct for Openreading frames
+struct(ORF=> {
+   seq  => '$',
+   start => '$',
+   end => '$',
+   len => '$',
+   
+});
+#############################
+###getORFs###
+#finds every open reading frame in a  sequence ( starting with ATG ending with TAG or TAA or TGA)
+#input 1[string] sequence: nucleotide sequence to look for ORFs
+#return 1: ref to Array filled with ORF struct items, each ORF consists of its sequence start and end position and length
+#############################
+sub getORFs
+{
+    my @retArray;
+    my $seq = shift(@_);
+    while ($seq =~ /(ATG[ACGT]+?(TAG|TAA|TGA))/gi) # find alls ORFs in seq
+    {
+        my $orf = ORF->new();
+        $orf->seq($1);
+        $orf->start($-[0]+1);
+        $orf->end($+[0]);
+        $orf->len(length($1));
+        push(@retArray,$orf);
+    }
+    return \@retArray;
+}
 
 #############################
 ###fileToArray###
@@ -36,6 +67,41 @@ sub fileToArray
     }
     close($fh);
     return @retArray;
+}
+#############################
+###getFastaSeqs###
+#Reads reference to Array stored with all found fasta Sequences
+#input 1[string] FilePath : path to input FastaFile
+#return 1: array filled with fasta sequences
+#############################
+sub getFastaSeqs
+{
+    my $filePath = shift(@_);
+    
+    my @retArray=();
+    open(my $fh, "<", $filePath) || die "Couldn't open '".$filePath."' for reading because: ".$!;
+    my $seq="";
+    while(my $line = <$fh>){
+        chomp($line);
+        #print " NOW WE ARE AT LINE \t$line\n";
+        if ($line =~ /^>/) { # is fasta header
+            if ($seq ne "") {
+                #print "NOW PUSHED $seq to ARRAY\n";
+                push(@retArray,$seq);
+                $seq="";
+            }
+        }else
+        {
+            $seq .= $line;
+        }
+    }
+    if ($seq ne "") { # Push seq to array if there is only one fasta seq in file
+        #print "NOW PUSHED $seq to ARRAY\n";
+        push(@retArray,$seq);
+    }
+    
+    close($fh);
+    return \@retArray;
 }
 
 #############################
@@ -258,7 +324,8 @@ sub seq_convert
 #Sequence atring will be cut with a given cut Sequence, could be more than once, cut happens before the first position of the cut Sequence,
 # 
 #input 1 $sequence : string
-#input 2 $cutSeq  : Restriction like cut Sequence, cut happens before the found cutSequence
+#input 2 $cutSeq  : Regex Restriction like cut Sequence, cut happens at the second position of the found cut sequence
+#                   ex. Restriction enzyme BstYI cuts at [A|G]GATC[T|C] --> CCGGATCTT will be cut into CCG and GATCTT
 # return 1 : ref array of cutted Sequence 
 #############################
 sub seq_cut
@@ -269,8 +336,8 @@ sub seq_cut
     
     my $start=0;
     while ($sequence =~ /$cutSeq/g) { #$start always has the -1 position of the last found regex
-        push(@cutSequences,substr($sequence,$start,$-[0]-$start)); # we take the last found position and (nextFoundPosition - lastFoundPosition) characters to be inserted into the resulting substrings
-        $start = $-[0];
+        push(@cutSequences,substr($sequence,$start,$-[0]-$start+1)); # we take the last found position +1 and (nextFoundPosition - lastFoundPosition) characters to be inserted into the resulting substrings
+        $start = $-[0]+1;
     }
     push(@cutSequences,substr($sequence,$start,length($sequence))); # also take the last part of the sequence
     

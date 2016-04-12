@@ -9,6 +9,56 @@ arguments are in @ARGV
 3 variables, declaration with 'my'
 $scalars, @arrays and %hashes
 
+#####command line arguments
+
+use Getopt::Long;
+
+my $usage= << "JUS";
+  Title:    Manhatten Tourist Problem
+  usage:   mtp_mkoestl_ex03.pl -file [inputFile]
+  
+  options: -file|f  [REQUIRED]   Input file for road matrix [int arrays]
+                                 InutFile should have following format
+                                 # west-east streets
+                                 3 2 4 0
+                                 3 2 4 2
+                                 0 7 3 4
+                                 3 3 0 2
+                                 1 3 2 2
+                                 
+                                 # north-south streets 
+                                 1 0 2 4 3
+                                 4 6 5 2 1
+                                 4 4 5 2 1
+                                 5 6 8 5 3
+           -help|h               print this message
+           -verbose|v            print additional informations        
+
+  results: Calculateds the path with the most costtourist attractions) from position (0/0) to most right and down corner of the road network. Dynamically Programmed
+JUS
+
+
+
+my $opt_help;
+my $opt_file;
+my $opt_verbose;
+
+GetOptions(
+  "h|help|" => \$opt_help,
+  "file|f=s" => \$opt_file,
+  "verbose|v" => \$opt_verbose);
+    
+#print usage if requested
+if($opt_help){
+  print $usage;
+  exit;
+}
+
+if (! -f $opt_file) {
+    print "$opt_file is no valid file \n$usage";
+    exit;
+}
+
 
 ###########scalars
 undef = none = NUll
