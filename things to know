@@ -13,7 +13,7 @@ make maintainer-clean
 git submodule init / update
 autoreconf --install
 ./configure --without-forester --prefix='..'
-make
+make  ( make -j5, distribute compute power to 5 )
 
 
 Git lab sign in path = https://krios.tbi.univie.ac.at/users/sign_in
@@ -49,7 +49,10 @@ Managing Branches
 	git checkout "BranchName"		switch to different branches
 	
 	git push -u origin newBranchName	Push to new Branch
+	git branch -d the_local_branch		Delete a branch
+	git branch -m <newname>			Rename
 
+git rebase branchname,  to set the current branch as head of the given branch,  OR SO
 
 
 History zurueck
@@ -248,18 +251,45 @@ Permutation of n elements without Wiederholung = Pn=n!
 
 -----------------------------------------------------------------------
 ###################################################
+SWIG
+###################################################
 
 C-Python interfaces for viennaRNALib with SWIG-2.0, http://www.swig.org/papers/PyTutorial98/PyTutorial98.pdf
 
+
+file.i is tranformed with SWIG to file_wrap.c, than this c file is linked with the original c files to generate a shared library
 To compile such SWIG wrappers to this(you must have c source files, and interface files(the wrappers for the c functions)
 swig -python example.i
-gcc -c -fpic example.c example_wrap.c -I/usr/local/include/python2.0
+gcc -c -fpic example.c example_wrap.c -I/usr/include/python2.7
 gcc -shared example.o example_wrap.o -o _example.so
 
 for c++ use this line
 c++ -shared example.o example_wrap.o -o example.so
 
 now you have the wrappers in a shared library and you can create a python file and execate the c functions with example.cFunction()
+
+If you want to include the created module only if SWIG is running, add this to your header files
+/* header.h --- Some header file */
+/* SWIG directives -- only seen if SWIG is running */
+#ifdef SWIG(this is preprocessing symbol)
+%module foo
+#endif
+
+you can add own functions, or external variables into the .i files by adding for.ex.
+ %inline %{
+	extern int Foo=33;
+%}
+now we have the external variable Foo in python
+
+
+what are the casts??:
+from c  --> for. ex. python
+short(16bit)	-->	int(32bit)
+char	-->	one character ASCII string
+0,1 	--> boolean
+double	-->	float
+char*	-->	NUll-terminated ASCII string
+
 
 
 
