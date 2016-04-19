@@ -12,7 +12,7 @@ vienna rna lib install
 make maintainer-clean
 git submodule init / update
 autoreconf --install
-./configure --without-forester --prefix='..'
+./configure --without-forester --with-python3 --prefix='..'
 make  ( make -j5, distribute compute power to 5 )
 
 
