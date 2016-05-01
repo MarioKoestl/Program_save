@@ -6,16 +6,16 @@ use lib::Eggnog;
 
 my $usage= << "JUS";
   Title:   1_ortho.pl
-  usage:   perl 1_ortho.pl -s1 [speciesId1] -s2 [speciesId2]
+  usage:   perl 1_ortho.pl -s1 [speciesId1] -s2 [speciesId2] Copyright by Mario Köstl, no changes allowed!!!
   
   options: -s1|species1  [REQUIRED]    ID found in eggnog for first species 
            -s2|species2   [REQUIRED]   ID found in eggnog for second species
            -slp|slpath                 speciesList file PATH, default value = ./data/species_list.txt
-           -me|members                  meNOG_Members file  PATH, default value = ./data/meNOG.members.tsv
+           -me|members                 meNOG_Members file  PATH, default value = ./data/meNOG.members.tsv
            -help|h               print this message
            -verbose|v            print additional informations        
         
-  results: returns the amount of homolog genes of species1 in species 2
+  results: returns the amount of genes of species1 that are homolog with species 2
 JUS
 my $opt_help;
 my $opt_v;
@@ -53,16 +53,29 @@ if (!$membersPath or (! -f $membersPath)) {
 }
 
 
-if(lib::Eggnog->containSpecies($s1,$specListPath) and lib::Eggnog->containSpecies($s2,$specListPath))
+if(lib::Eggnog->containSpecies($specListPath,$s1) and lib::Eggnog->containSpecies($specListPath,$s2))
 {
-    my %h_homo = %{lib::Eggnog->createTsvHash($membersPath)};
-    print "Amount of homologs= ", countHomo($s1,$s2,\%h_homo),"\n";   
+    my ($sucess,$h_homo_ref) = lib::Eggnog->createTsvHash_member($membersPath); # just store all from the tsv file in a hash
+    if(!$sucess){
+        print "members TSVfile couldn't be parsed, program aborted\n";
+        return 0;
+    }    
+    print "Amount of homologs= ", countHomo($s1,$s2,$h_homo_ref),"\n";   
 }else
 {
     print("inserted Species are not present in the eggNOG database!!\n");
 }
 
-#count the amount of homolog proteins between species s1 and s2
+######
+#countHomo
+#
+#Finds homolog proteins for given criteria(more details can be found in --help)
+#
+#in1: Id of first species
+#in2: Id of second species
+#in4: Hash that represents the members tsv file
+#ret1: #the amount of homolog proteins between species s1 and s2
+######
 sub countHomo
 {
     my $s1 = shift(@_);
