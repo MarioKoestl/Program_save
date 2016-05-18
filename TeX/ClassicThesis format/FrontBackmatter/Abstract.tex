@@ -1,0 +1,44 @@
+%*******************************************************
+% Abstract
+%*******************************************************
+%\renewcommand{\abstractname}{Abstract}
+\pdfbookmark[1]{Abstract}{Abstract}
+\begingroup
+\let\clearpage\relax
+\let\cleardoublepage\relax
+\let\cleardoublepage\relax
+
+\chapter*{Abstract}
+Short summary of the contents in English\dots
+
+RNA sequences are folding into secondary structures, according to their primary sequence and thermodynamic. Structure prediction of RNA in vitro can be achieved via calculation of the Minimal Free Energy (MFE). (In vivo sachen werden nicht beachtet, noch schreiben). During transcription of the DNA, folding of the growing RNA chain occurs simultaneously. An approach for RNA folding prediction during(and after), transcription is implemented in the program kinwalker. By using reference structures, the accuracy of the kinewalker algorithm is examined. Parameters like transcription rates or path-finding algorithms are studied to result their exact calibrations. 
+Furthermore the general behaviour of similar sequences(Alignments)during RNA folding are investigated.
+
+Es can in folding trap oder gleich mFE strruktur falten. TRAP beschrieben dann mus ichs unten nicht mehr machen
+
+
+
+
+\vfill
+
+\pdfbookmark[1]{Zusammenfassung}{Zusammenfassung}
+\chapter*{Zusammenfassung}
+Kurze Zusammenfassung des Inhaltes in deutscher Sprache\dots
+
+RNA Sequenzen könnnen sich zu komplizierte Sekundäre Strukturen formen. Bekannte Sekundärstrukturen die auftreten sind z.B.: Loops, Hairpins, Internal Loops, Bulges, Pseudoloops,.... Die Faltung in ebensolche Strukturen ist abhängig von der Primärsequenz einer RNA. Darüberhinaus ist der Energetische Faktor, vorallem die freie Energie einer Struktur auschlaggebend welche Sekundärstrukturen überhaupt geformt werden kann und wird. Wird die Faltung in vitro durchgeführt werden noch mehr Parameter benoetigt. Den Platz den eine RNA Kette zu verfügung hat, aufgrund der dichten molekuelmenge innerhalb der Zelle sowie Hilfsmoleküle sind auschlaggebend für korrekte Faltung.
+Um solche RNA faltungsvorgänge in sitro zu beschreiben werden ansätzte benötigt die RNA faltung vorherbestimmen. Für jede Sequenz kann eine minimale freie energie struktur(MFE-Minimal free energy) vorherbestimmt werden. Diese Struktur wird aufgrund vorherschender Thermodynamic von der RNA kette am warscheinlichsten eingenommen.
+Da Faltungsvorgänge aber auch schon während der Transcription am 5' Ende der wachsenden Kette vonstatten gehen, ist die Analyse des gesamten Faltungswegs von Interesse. Das Programm Kinwalker(referenz) hat einen ansatz implementiert RNA Faltungsvorgänge während der Transcription aufgrund ihrer freien Energie zu berechnen. Da Zwischenstrukturen abgebildet weden, kann der genaue Faltungsvorgang verfoglt werden. Die letzte Struktur die immer eingenommen wird ist die MFE struktur, die theoretisch die energetisch stabilste Struktur für diese Sequenz beschreibt. Waehrend des Faltungsvorgangs wird immer die MFE Struktur fuer jede Zwischenstruktur gebildet. Kinwalker hat Pfadfindungsalgorithmen wie morgen higgs oder pathfinder implementiert um Strukturveraenderungen genau zu beschreiben. Um MFE strukturen zu beschreiben werden auch Dangling Ends betrachtet. Kinwalker kann unterscheiden ob und wie man dangling ends fuer die Berechnung der Energie einer Struktur verwendet. Das Ziel ist es eine perfekte Vorherbsteimmung des Faltungsvorgangs zu ermoeglichen wenn nur die Primaersequenz und ein passendes Energiemodell zur Verfuegung stehen. Um die Genauigkeit des Programmes zu bestimmen benoetigt man experimentell bestimmte Referenz Strukturen ausgewaehlter Sequenzen. Eine Beschreibung benutzter Referenzstrukturen findet man im Abschnitt Data Description. Durch den Vergleich der Referenzstruktur mit der Vorhersage des Kinwalker programms kann ermittelt werden, wie genau der Faltungsvorgang berechnet wurde. Der Einsatz von verschiedenen Kinwalker Parameter ergibt unterschiedliche Faltungsvorgaenge. Durch statistische Auswertung aller Faltungsvorgaenge mit allen Parametern koennen sich angepasstere Parameterkalibrierungen ergeben, die die Realitaet besser wiederspiegeln.
+Anhand der AUswertung bestimmter Scores, wie z.B.: ensemble Distanze kann darueber hinaus bestimmt werden ob Sequenzen eine folding trap bei bestimmten Parametern ausbilden. Eine Folding Trap ist eine lokale energetisch beguenstige Struktur waehrend des Faltungsvorganges, die nicht der MFE entspricht. Um von solchen folding Traps wieder in die MFE zu wechseln, benoetigt man viel Energie und Zeit.
+Darueberhinaus wurden auch Faltungsvorgaenge gesamter Alignments mit kinwalker berechnet, um Zusammenhaenge oder Unterschiede aehnlicher Sequenzen zu analysieren. Statistische Auswertungen ergeben weitere Erkenntnisse wie und warum Faltungsvorgaenge einer RNA familie evolviert sind.
+
+Insgesamt wurden 3 Referenzsequencen sowie 3 Alignments mit 200 verschiedenen Kinwalker Parameter Kombinationen berechnet. Die Ergebnisse wurden mit verschiedensten statistischen Scores berechnet und ausgewertet. Referenzstrukturen wurden verwendet um Vergleiche anzustellen. 
+Auswertung der Scores qurde mit ggplot2 und R getaetigt.
+Ein Umfassender Parametercheck fuer das Programm kinwalker wurde getaetigt.
+
+
+
+
+
+\endgroup			
+
+\vfill
