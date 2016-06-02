@@ -22,6 +22,28 @@ sub createTsvHash
     close($fh);
     return \%hash; 
 }
+#get all lines from annotation file
+#HashId = groupId, hash value = list of protein count for this groupId, the corresponding functionalId and a description
+sub getTSVHash_anno
+{
+    shift(@_);  # first parameter is the module name itself
+    my $f = shift(@_);
+    my %hash;
+    open(my $fh, "<", $f) || die "Couldn't open '".$f."' for reading because: ".$!;
+
+    while(my $line = <$fh>){
+        chomp($line);
+        my @split = split(/\t/,$line);
+        my @list; # this list contains the protein count for this groupId, the corresponding functionalId and a description
+        push(@list,$split[2]);
+        push(@list,$split[4]);
+        push(@list,$split[5]);
+        $hash{$split[1]}=\@list;
+    }
+    close($fh);
+    return \%hash; 
+    
+}
 
 # check for valid with file species list) ID can be inserted
 sub containSpecies
